@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Text-to-Speech Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f72585;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #f5f7fa;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .description {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 16px;
+            min-height: 150px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .range-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-play {
+            background-color: var(--accent);
+        }
+        
+        .btn-download {
+            background-color: var(--success);
+        }
+        
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: rgba(72, 149, 239, 0.1);
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+        
+        .audio-player {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .error {
+            background-color: rgba(247, 37, 133, 0.1);
+            border-left: 4px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .success {
+            background-color: rgba(76, 201, 240, 0.1);
+            border-left: 4px solid var(--success);
+            color: var(--success);
+        }
+        
+        .char-count {
+            text-align: right;
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text-to-Speech Converter</h1>
+        <p class="description">Convert any text to natural sounding speech and download as MP3</p>
+        
+        <form id="ttsForm">
+            <div class="form-group">
+                <label for="text">Enter your text:</label>
+                <textarea id="text" name="text" placeholder="Type or paste your text here..." required></textarea>
+                <div class="char-count"><span id="charCount">0</span> characters</div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="voice">Voice Type:</label>
+                    <select id="voice" name="voice">
+                        <option value="female">Female Voice</option>
+                        <option value="male">Male Voice</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="rate">Speech Rate:</label>
+                    <div class="range-container">
+                        <input type="range" id="rate" name="rate" min="50" max="300" value="150">
+                        <span class="range-value" id="rateValue">150</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="previewBtn" class="btn-play">
+                    <i class="fas fa-play"></i> Preview
+                </button>
+                <button type="submit" id="convertBtn" class="btn-download">
+                    <i class="fas fa-download"></i> Download MP3
+                </button>
+            </div>
+        </form>
+        
+        <div id="result">
+            <p>Your audio is ready!</p>
+            <audio controls class="audio-player" id="audioPlayer"></audio>
+        </div>
+        
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ttsForm = document.getElementById('ttsForm');
+            const textInput = document.getElementById('text');
+            const voiceSelect = document.getElementById('voice');
+            const rateInput = document.getElementById('rate');
+            const rateValue = document.getElementById('rateValue');
+            const previewBtn = document.getElementById('previewBtn');
+            const convertBtn = document.getElementById('convertBtn');
+            const resultDiv = document.getElementById('result');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const statusMessage = document.getElementById('statusMessage');
+            const charCount = document.getElementById('charCount');
+            
+            // Update character count
+            textInput.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            
+            // Update rate value display
+            rateInput.addEventListener('input', function() {
+                rateValue.textContent = this.value;
+            });
+            
+            // Preview button functionality
+            previewBtn.addEventListener('click', function() {
+                const text = textInput.value.trim();
+                if (!text) {
+                    showStatus('Please enter some text to preview', 'error');
+                    return;
+                }
+                
+                previewBtn.disabled = true;
+                previewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                
+                // Use the Web Speech API for preview
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Set voice properties
+                    utterance.rate = rateInput.value / 100;
+                    
+                    // Find the selected voice
+                    const voices = window.speechSynthesis.getVoices();
+                    const selectedVoice = voiceSelect.value === 'male' ? 
+                        voices.find(v => v.name.includes('Male')) || voices[0] : 
+                        voices.find(v => v.name.includes('Female')) || voices[1];
+                    
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                    
+                    utterance.onend = function() {
+                        previewBtn.disabled = false;
+                        previewBtn.innerHTML = '<i class="fas fa-play"></i> Preview';
+                    };
+                    
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    showStatus('Your browser does not support speech preview', 'error');
+                    previewBtn.disabled = false;
+                    previewBtn.innerHTML = '<i class="fas fa-play"></i> Preview';
+                }
+            });
+            
+            // Form submission for MP3 download
+            ttsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const text = textInput.value.trim();
+                if (!text) {
+                    showStatus('Please enter some text to convert', 'error');
+                    return;
+                }
+                
+                convertBtn.disabled = true;
+                convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                statusMessage.style.display = 'none';
+                
+                const formData = new FormData(ttsForm);
+                
+                fetch('http://127.0.0.1:5000/convert', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const audioUrl = URL.createObjectURL(blob);
+                    audioPlayer.src = audioUrl;
+                    resultDiv.style.display = 'block';
+                    
+                    // Create download link
+                    const a = document.createElement('a');
+                    a.href = audioUrl;
+                    a.download = 'speech_output.mp3';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    showStatus('Audio generated and downloaded successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showStatus(error.error || 'An error occurred while converting text to speech', 'error');
+                })
+                .finally(() => {
+                    convertBtn.disabled = false;
+                    convertBtn.innerHTML = '<i class="fas fa-download"></i> Download MP3';
+                });
+            });
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status ${type}`;
+                statusMessage.style.display = 'block';
+                
+                // Scroll to status message
+                statusMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Auto-hide after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 5000);
+                }
+            }
+            
+            // Load voices when available
+            let voicesLoaded = false;
+            speechSynthesis.onvoiceschanged = function() {
+                if (!voicesLoaded) {
+                    voicesLoaded = true;
+                    const voices = window.speechSynthesis.getVoices();
+                    // You could populate the voice select with available voices here
+                }
+            };
+            
+            // Initial voices load
+            if (speechSynthesis.getVoices().length > 0) {
+                voicesLoaded = true;
+            }
+        });
+    </script>
+</body>
+</html>
